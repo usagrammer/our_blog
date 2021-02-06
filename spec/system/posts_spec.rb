@@ -38,25 +38,35 @@ RSpec.describe 'ログインしている', type: :system do
   shared_context '新規投稿ページへアクセス' do
     before do
       visit root_path
-      # 新規投稿ページへのリンクがある
-      expect(page).to have_content('新規投稿')
       # 投稿ページに移動する
       visit new_post_path
     end
   end
 
-  shared_context '編集ページへアクセス' do
+  shared_context '詳細ページへアクセス' do
     before do
       @post.save
       @new_title = 'bar'
       @new_content = 'foo'
 
       visit root_path
-      # 新規投稿ページへのリンクがある
+      # 投稿済みのpostをクリックする
       find('a.content__right__top--title:first-of-type').click
-      expect(page).to have_content('編集')
+      expect(page).to have_content(@post.title)
+    end
+  end
+
+  shared_context '編集ページへアクセス' do
+    before do
       # 編集ページに移動する
       find('.postManage__edit').click
+    end
+  end
+
+  shared_context '削除ボタンをクリック' do
+    before do
+      # 削除ボタンをクリック
+      find('.postManage__delete').click
     end
   end
 
@@ -118,6 +128,7 @@ RSpec.describe 'ログインしている', type: :system do
   context 'postが編集できるとき' do
 
     include_context '@post.userでログイン'
+    include_context '詳細ページへアクセス'
     include_context '編集ページへアクセス'
 
     it '正しい情報を入力すればpostが編集できてトップページに移動する' do
@@ -139,6 +150,7 @@ RSpec.describe 'ログインしている', type: :system do
   context 'postが編集できないとき' do 
 
     include_context '@post.userでログイン'
+    include_context '詳細ページへアクセス'
     include_context '編集ページへアクセス'
 
     it 'titleが不足していると更新できない' do
@@ -164,28 +176,76 @@ RSpec.describe 'ログインしている', type: :system do
   end
 
   context 'postが削除できるとき' do 
+    include_context '@post.userでログイン'
+    include_context '詳細ページへアクセス'
+
+    it '投稿者なら自分のpostを削除できる' do
+      # 削除ボタンをクリック
+      # Postモデルのカウントが1減る
+      expect{
+        find('.postManage__delete').click
+      }.to change { Post.count }.by(-1)
+    end
+
   end
 
-  context 'postが削除できないとき' do 
+  context 'postが削除できないとき' do
+    include_context '@post.userでログイン'
+    include_context '詳細ページへアクセス'
+
+    it '投稿者でないなら自分のpostを削除できない' do
+      ## @postのuserを別のuserにしておく
+      another_user = FactoryBot.create(:user)
+      @post.update(user: another_user)
+
+      # 削除ボタンをクリック
+      # Postモデルのカウントが1減る
+      expect{
+        find('.postManage__delete').click
+      }.not_to change { Post.count }
+    end
   end
 
-end
+  context 'ログインしていない' do
 
+    before do
+      @user = FactoryBot.create(:user)
+      @post = FactoryBot.build(:post, user: @user)
+    end
 
-RSpec.describe 'ログインしていない', type: :system do
+    context 'postが投稿できないとき' do
 
-  before do
-    @user = FactoryBot.create(:user)
-    @post = FactoryBot.build(:post, user: @user)
-  end
+      it 'ログインしていないと新規投稿ページに遷移できない' do
+        # 新規投稿ページへのリンクがない
+        visit root_path
+        expect(page).to have_no_content('新規投稿')
+      end
 
-  context 'postが投稿できないとき' do
+    end
 
-    it 'ログインしていないと新規投稿ページに遷移できない' do
-      # ログアウトする
-      find('.header__right').find('a.header__right--btn[href="/users/sign_out"]').click
-      # 新規投稿ページへのリンクがない
-      expect(page).to have_no_content('新規投稿')
+    context 'postが編集できないとき' do
+      include_context '詳細ページへアクセス'
+
+      it 'ログインしていないと編集ボタンが表示されない' do
+        expect(page).to have_no_content('編集')
+      end
+
+      it 'ログインしていないと編集ページに遷移できない' do
+        # 無理やり編集ページへアクセスする
+        visit edit_post_path(@post)
+        # 詳細ページに遷移する
+        expect(current_path).to eq post_path(@post)
+      end
+
+    end
+
+    context 'postが削除できないとき' do
+      include_context '詳細ページへアクセス'
+
+      it 'ログインしていないと削除ボタンが表示されない' do
+        expect(page).to have_no_content('削除')
+      end
+
     end
 
   end
