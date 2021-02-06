@@ -37,7 +37,6 @@ RSpec.describe 'ログインしている', type: :system do
 
   shared_context '新規投稿ページへアクセス' do
     before do
-      visit root_path
       # 投稿ページに移動する
       visit new_post_path
     end
@@ -60,13 +59,6 @@ RSpec.describe 'ログインしている', type: :system do
     before do
       # 編集ページに移動する
       find('.postManage__edit').click
-    end
-  end
-
-  shared_context '削除ボタンをクリック' do
-    before do
-      # 削除ボタンをクリック
-      find('.postManage__delete').click
     end
   end
 
@@ -233,8 +225,8 @@ RSpec.describe 'ログインしている', type: :system do
       it 'ログインしていないと編集ページに遷移できない' do
         # 無理やり編集ページへアクセスする
         visit edit_post_path(@post)
-        # 詳細ページに遷移する
-        expect(current_path).to eq post_path(@post)
+        # ログインページに遷移する
+        expect(current_path).to eq new_user_session_path
       end
 
     end
