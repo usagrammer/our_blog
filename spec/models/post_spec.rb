@@ -38,6 +38,16 @@ RSpec.describe Post, type: :model do
         expect(@post.errors.full_messages).to include("Content can't be blank")
       end
 
+      it 'imageが空では投稿できない' do
+        @post.image = nil
+        
+        @post.valid?
+        puts 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+        puts @post.errors.full_messages
+        puts 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+        expect(@post.errors.full_messages).to include("Image can't be blank")
+      end
+
       it 'ユーザーが紐付いていなければ投稿できない' do
         @post.user = nil
         

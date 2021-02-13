@@ -12,6 +12,9 @@
     <%= link_to "削除", post_path(@post.id), method: :delete, class: "postManage__delete" %>
   <% end %>
 </div>
+<div class="postImage">
+  <%= image_tag @post.image.variant(resize: '300x300') if @post.image.present? %>
+</div>
 <div class="postText">
   <%= simple_format @post.content %>
 </div>

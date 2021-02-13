@@ -1,5 +1,8 @@
 <div class="content">
   <div class="content__left">
+    <div class="content__left--image">
+      <%= image_tag post.image.variant(resize: '55x55') if post.image.present? %>
+    </div>
   </div>
   <div class="content__right">
     <div class="content__right__top">

@@ -37,7 +37,7 @@ RSpec.describe 'ログインしている', type: :system do
 
   shared_context '新規投稿ページへアクセス' do
     before do
-      # 投稿ページに移動する
+      # 新規投稿ページに移動する
       visit new_post_path
     end
   end
@@ -73,6 +73,9 @@ RSpec.describe 'ログインしている', type: :system do
       # フォームに情報を入力する
       fill_in 'post_title', with: @post.title
       fill_in 'post_content', with: @post.content
+      image_path = Rails.root.join('public/images/test.png')
+      attach_file('post[image]', image_path)
+
       # 送信するとPostモデルのカウントが1上がる
       expect{
         find('input[name="commit"]').click
