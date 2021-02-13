@@ -23,6 +23,7 @@ RSpec.describe Post, type: :model do
         @post.valid?
         puts 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
         puts @post.errors.full_messages
+        puts @post.attributes
         puts 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
         expect(@post.errors.full_messages).to include("Title can't be blank")
       end
